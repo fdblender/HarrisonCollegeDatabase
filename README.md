@@ -1,4 +1,3 @@
-# HarrisonCollegeDatabase
 Harrison College Database
 
 Courses k
@@ -17,9 +16,9 @@ Semesters s
 
 Classes c
 - CRN: number (PK)
-- CourseNo: number (FK into Course)
+- CourseId: number (FK into Course)
 - Semester: varchar(20)
-- SubjectCode: Varchar(5)   note: where is this used?
+- RoomNo: number (FK into Classroom.RoomNo)
 - Instructorid: number  (FK into Instructor.EmpNo)
 
 Classroom r
@@ -85,7 +84,7 @@ SELECT e.CRN, k.coursename, k.description, c.subjectcode, i.instructorname, c.se
 	WHERE e.StudentId = value and c.semester = currentsemester
 -----------------------------------------------------------
 - Students view transcript
-SELECT e.CRN, k.coursename, k.description, c.subjectcode, i.instructorname, c.semester
+SELECT e.CRN, k.coursename, k.description, k.subjectcode, i.instructorname, c.semester
 	FROM Enrollment e
 	INNER JOIN Classes c 
 		ON e.CRN = c.CRN
@@ -97,8 +96,69 @@ SELECT e.CRN, k.coursename, k.description, c.subjectcode, i.instructorname, c.se
 	ORDER BY c.semester DESC;
 -----------------------------------------------------------
 - View all courses
-SELECT k.CourseNo, k.CourseName, k.Description, k.SubjectCode, d.DepartmentName
+SELECT k.CourseName, k.Description, k.SubjectCode, d.DepartmentName
 	FROM Courses k
 	ORDER BY d.DepartmentName, k.SubjectCode, k.CourseName;
 -----------------------------------------------------------
 - view all classes in current semester 
+-- get the current semester from the session
+
+SELECT c.CRN, c.Semester, c.RoomNo, k.CourseName, k.Description, i.InstructorName
+	FROM Classes c
+	INNER JOIN Courses k
+		ON k.CourseId = c.CourseId
+	INNER JOIN Instructors ie
+		ON i.InstructorId = c.InstructorId
+	ORDER BY k.CourseName, c.CRN
+	WHERE c.Semester = value;
+-----------------------------------------------------------
+- Instructors can view their classes in the current semester
+-- get the current semester from the session, get instructor ID
+SELECT c.CRN, c.Semester, c.RoomNo, k.CourseName, k.Description, i.InstructorName
+	FROM Classes c
+	INNER JOIN Courses k
+		ON k.CourseId = c.CourseId
+	INNER JOIN Instructors ie
+		ON i.InstructorId = c.InstructorId
+	ORDER BY k.CourseName, c.CRN
+	WHERE c.Semester = value and i.InstructorName = value;
+
+-----------------------------------------------------------
+- get the roster of students in their classes from this semester 
+- or previous semesters
+-- get the instructor ID from session (saved at login by instructor)
+-- prompt instructor to select the semester from drop-down menu 
+--		(get all CRNs for that instructor for the selected semester)
+--		prompt instructor to select the course name and CRN
+-- 			display the class information below:
+
+SELECT e.CRN, k.CourseName, s.StudentName, e.grade
+	FROM Enrolllment e 
+	INNER JOIN Classes c 
+		ON c.CRN = e.CRN
+	INNER JOIN Courses k 
+		ON k.CourseId = c.CourseId
+	INNER JOIN Students s 
+		ON s.StudentId = e.StudentId
+	WHERE c.InstructorId = value and c.CRN = value;	
+
+-----------------------------------------------------------
+-- view all course
+SELECT * 
+FROM Courses c
+ORDER BY c.CourseName;
+-----------------------------------------------------------
+-- view all classes in current semester 
+-- get the current semester from the session
+
+SELECT c.CRN, c.Semester, c.RoomNo, k.CourseName, k.Description, i.InstructorName
+	FROM Classes c
+	INNER JOIN Courses k
+		ON k.CourseId = c.CourseId
+	INNER JOIN Instructors ie
+		ON i.InstructorId = c.InstructorId
+	ORDER BY k.CourseName, c.CRN
+	WHERE c.Semester = value;
+
+
+
